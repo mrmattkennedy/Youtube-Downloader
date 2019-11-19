@@ -86,4 +86,4 @@ lint/tmp/
 # lint/reports/
 
 #strings
-Client\Android\app\src\main\res\values\string.xml
+Client/Android/app/src/main/res/values/string.xml
