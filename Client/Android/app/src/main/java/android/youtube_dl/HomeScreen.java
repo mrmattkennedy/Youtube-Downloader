@@ -35,7 +35,7 @@ public class HomeScreen extends AppCompatActivity {
                     if (event == null || !event.isShiftPressed()) {
                         String url = urlText.getText().toString();
                         Matcher matcher = pattern.matcher(url);
-                        Log.d("TEST", Boolean.toString(matcher.matches()));
+                        Log.d("TEST2", Boolean.toString(matcher.matches()));
 
                         return true; // consume.
                     }
