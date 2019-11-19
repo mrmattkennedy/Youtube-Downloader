@@ -1,0 +1,137 @@
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<title>Google Maps - pygmaps </title>
+<style>
+html,
+body {
+  height: 100%;
+}
+body {
+  display: grid;
+  font-family: Avenir;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  background-image: url("https://i.imgur.com/TcHQrnS.png");
+  background-size: cover;
+}
+* {
+  box-sizing: border-box;
+}
+.inp {
+  position: absolute;
+  margin: auto;
+  width: 100%;
+  max-width: 280px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-90%, -400%);
+}
+.inp .label {
+  position: absolute;
+  top: 16px;
+  left: 0;
+  font-size: 16px;
+  color: #9098a9;
+  font-weight: 500;
+  transform-origin: 0 0;
+  transition: all 0.2s ease;
+}
+.inp .border {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(#06beb6, #48b1bf);
+  transform: scaleX(0);
+  transform-origin: 0 0;
+  transition: all 0.15s ease;
+}
+.inp input {
+  -webkit-appearance: none;
+  width: 100%;
+  border: 0;
+  font-family: inherit;
+  padding: 12px 0;
+  height: 48px;
+  font-size: 24px;
+  font-weight: 500;
+  border-bottom: 2px solid #c8ccd4;
+  background: none;
+  border-radius: 0;
+  color: #223254;
+  transition: all 0.15s ease;
+}
+.inp input:hover {
+  background: rgba(34,50,84,0.03);
+}
+.inp input:not(:placeholder-shown) + span {
+  color: #5a667f;
+  transform: translateY(-26px) scale(1.25);
+}
+.inp input:focus {
+  background: none;
+  outline: none;
+  width: 200%
+}
+.inp input:focus + span {
+  background: linear-gradient(to top, #06beb6 0%, #48b1bf 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transform: translateY(-30px) scale(1.25);
+}
+.inp input:focus + span + .border {
+  transform: scaleX(2);
+}
+
+#videoObject {
+	transition: all 1.15s ease;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-250px, -100px);
+	
+}
+
+</style>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+<script type="text/javascript">
+	function handle(e)
+	{
+		var enter_key = 13;
+		if(e.which === enter_key)
+		{
+			var url = $('#inp').val();
+			var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|\?v=)([^#\&\?]*).*/;
+            var match = url.match(regExp);
+			console.log(match);
+            if (match && match[2].length == 11)
+			{
+				$('#videoObject').attr('src', 'https://www.youtube.com/embed/' + match[2] + '?autoplay=1&enablejsapi=1');
+				$('#videoObject').attr('frameborder', 1);
+			}
+			else
+			{
+				$('#videoObject').attr('src', null);
+				$('#videoObject').attr('frameborder', 0);
+			}
+		}
+	}
+	
+//get list with https://www.googleapis.com/youtube/v3/search, it's a json
+//https://www.googleapis.com/youtube/v3/search?key=KEY_UzfxklgqqfRLXI&part=snippet&type=video&q=im+a+buff+baby
+//ex: https://developers.google.com/youtube/v3/guides/implementation/search
+</script>
+</head>
+<body style="margin:0px; padding:0px;">
+	<label for="inp" class="inp">
+	  <input type="text" id="inp" placeholder="&nbsp;" onkeypress="handle(event)">
+	  <span class="label">Video URL</span>
+	  <span class="border"></span>
+	</label>
+	<iframe id="videoObject" type="text/html" width="500" height="265" frameborder="0" allowfullscreen></iframe>
+	
+</body>
+</html>
