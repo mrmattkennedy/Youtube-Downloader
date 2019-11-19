@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Scanner;
 
 public class CentralClient {
 	public static void main(String[] args)
@@ -17,6 +18,7 @@ public class CentralClient {
 		Socket ControlSocket = null;
 		DataOutputStream outToServer = null;
 		DataInputStream inFromServer = null;
+		Scanner in = null;
 		try {
 			int port1 = 12345;
 			//String ip = "192.168.0.7";
@@ -24,14 +26,14 @@ public class CentralClient {
 			ControlSocket = new Socket(ip, port1);
 			outToServer = new DataOutputStream(ControlSocket.getOutputStream());
 			inFromServer = new DataInputStream(new BufferedInputStream(ControlSocket.getInputStream()));
+			in = new Scanner(System.in);
 			
 			System.out.println("You are connected to the raspberry pi!");
 			System.out.println(ip);
 			
-			// Set port equal to port + 2, as per project guidelines.
-			int port = port1 + 2;
+			System.out.print("Enter a URL:\t");
 			// Send the command to the server.
-			outToServer.writeBytes(port + " test + " + '\n');
+			outToServer.writeBytes(in.nextLine() + '\n');
 			// Read status code with readInt(), which blocks until all 3 bytes read.
 			//Need only 3 bytes, as the status is 3 characters long
 			byte[] statusBytes = new byte[3];

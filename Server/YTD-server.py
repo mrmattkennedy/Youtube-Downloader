@@ -19,9 +19,16 @@ s.listen(5)
 while True:
     c, addr = s.accept()
     print("Got connection from Matt's Computer!")
-    data = c.recv(1024)
+    buffer = b''
+    while True:
+        data = c.recv(1)
+        if not data or data.decode('utf-8').endswith('\n'):
+            break
+        buffer += data
+        #print('buffer is ' + buffer.decode('utf-8'))
+    url = buffer.decode('utf-8')
     c.send('200'.encode('utf-8'))
-    #subprocess.call(["youtube-dl", "https://www.youtube.com/watch?v=3VSeiIUuvw4"], shell=True, stdout=subprocess.PIPE)
+    subprocess.call(["youtube-dl", url], shell=True, stdout=subprocess.PIPE)
     dir_path = os.path.dirname(os.path.realpath(__file__))
     files_path = os.path.join(dir_path, '*')
     newest = sorted(glob.iglob(files_path), key=os.path.getctime, reverse=True)[0] 
