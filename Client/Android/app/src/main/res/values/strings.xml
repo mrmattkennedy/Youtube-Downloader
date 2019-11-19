@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Youtube-DL</string>
+    <string name="youtube_api_key">test</string>
+</resources>
