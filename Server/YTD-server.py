@@ -2,6 +2,7 @@
 
 import glob
 import os
+import sys
 import socket
 import subprocess
 
@@ -28,7 +29,10 @@ while True:
         #print('buffer is ' + buffer.decode('utf-8'))
     url = buffer.decode('utf-8')
     c.send('200'.encode('utf-8'))
-    subprocess.call(["youtube-dl", url], shell=True, stdout=subprocess.PIPE)
+    if sys.platform == 'linux':
+        subprocess.call(["youtube-dl", url], stdout=subprocess.PIPE)
+    elif sys.platform == 'win32':
+        subprocess.call(["youtube-dl", url], shell=True, stdout=subprocess.PIPE)
     dir_path = os.path.dirname(os.path.realpath(__file__))
     files_path = os.path.join(dir_path, '*')
     newest = sorted(glob.iglob(files_path), key=os.path.getctime, reverse=True)[0] 

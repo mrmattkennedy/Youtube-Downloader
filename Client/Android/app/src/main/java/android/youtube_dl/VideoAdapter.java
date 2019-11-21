@@ -13,23 +13,30 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.ViewHolder> {
+public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.ViewHolder>  {
     private String[] mDataset;
 
     private List<String> titles;
     private List<String> channels;
     private List<String> thumbnailURLs;
+    private List<String> videoIDs;
 
     private LayoutInflater mInflater;
+    private ItemClickListener mClickListener;
 
     private Context context;
 
     // data is passed into the constructor
-    VideoAdapter(Context context, List<String> titles, List<String> channels, List<String> thumbnailURLs) {
+    VideoAdapter(Context context,
+                 List<String> titles,
+                 List<String> channels,
+                 List<String> thumbnailURLs,
+                 List<String> videoIDs) {
         this.mInflater = LayoutInflater.from(context);
         this.titles = titles;
         this.channels = channels;
         this.thumbnailURLs = thumbnailURLs;
+        this.videoIDs = videoIDs;
         this.context = context;
     }
 
@@ -49,13 +56,18 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.ViewHolder> 
 
         holder.title.setText(title);
         holder.channel.setText(channel);
-        Picasso.with(context).load(thumbnailURL).fit().into(holder.thumbnail);
+        Picasso.with(context).load(thumbnailURL).into(holder.thumbnail);
     }
 
     // total number of rows
     @Override
     public int getItemCount() {
         return titles.size();
+    }
+
+    // allows clicks events to be caught
+    void setClickListener(ItemClickListener itemClickListener) {
+        this.mClickListener = itemClickListener;
     }
 
 
@@ -76,7 +88,17 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.ViewHolder> 
 
         @Override
         public void onClick(View view) {
-            //if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition());
+            if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition());
         }
+    }
+
+    public String getID(int id)
+    {
+        return videoIDs.get(id);
+    }
+
+    // parent activity will implement this method to respond to click events
+    public interface ItemClickListener {
+        void onItemClick(View view, int position);
     }
 }
