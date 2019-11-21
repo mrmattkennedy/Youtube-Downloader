@@ -38,7 +38,6 @@ public class CentralClient {
 			//Need only 3 bytes, as the status is 3 characters long
 			byte[] statusBytes = new byte[3];
 			inFromServer.read(statusBytes);
-			String temp = new String(statusBytes, "UTF-8");
 	        int statusCode = Integer.parseInt(new String(statusBytes, "UTF-8"));
 			
 			// If status code is 550 (error).
@@ -47,13 +46,29 @@ public class CentralClient {
 			} 
 			else if (statusCode == 200)
 			{
-				DataInputStream inData = new DataInputStream(
-						new BufferedInputStream(ControlSocket.getInputStream()));
+				float percent_done = 0;
+				while (percent_done < 100)
+				{
+					byte[] percentBytes = new byte[5];
+					inFromServer.read(percentBytes);
+					String tempPercent = new String(percentBytes, "UTF-8").trim();
+					if (tempPercent.contentEquals("255"))
+					{
+						ControlSocket.close();
+						in.close();
+						return;
+					}
+			        percent_done = Float.parseFloat(tempPercent);
+			        System.out.println(percent_done);
+				}
+				//System.out.println(inFromServer.skip(10));
 				byte[] tempSizeBuffer = new byte[10];
 				inFromServer.read(tempSizeBuffer);
 				String tempSize = new String(tempSizeBuffer, "UTF-8").trim();
 		        int size = Integer.parseInt(tempSize);
+		        System.out.println("Size is " + Integer.toString(size));
 				
+		        DataInputStream inData = new DataInputStream(new BufferedInputStream(ControlSocket.getInputStream()));
 		        byte[] dataIn = new byte[size];
 				// Reads bytes from the inData stream and places them in dataIn byte array.
 				inData.readFully(dataIn);
@@ -65,7 +80,7 @@ public class CentralClient {
 				}
 				
 			}
-	
+			in.close();
 			ControlSocket.close();
 		}
 		catch (Exception e)

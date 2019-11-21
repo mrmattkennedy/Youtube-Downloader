@@ -3,6 +3,8 @@
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 <title>Google Maps - pygmaps </title>
+
+
 <style>
 html,
 body {
@@ -19,6 +21,13 @@ body {
 * {
   box-sizing: border-box;
 }
+
+.dl {
+	position: absolute;
+	left: 10%;
+	top: 10%;
+}
+
 .inp {
   position: absolute;
   margin: auto;
@@ -120,12 +129,34 @@ body {
 		}
 	}
 	
+	function saveAs(uri) {
+		var link = document.createElement('a');
+		if (typeof link.download === 'string') {
+			link.href = uri;
+			link.setAttribute('download', true);
+
+			//Firefox requires the link to be in the body
+			document.body.appendChild(link);
+
+			//simulate click
+			link.click();
+
+			//remove the link when done
+			document.body.removeChild(link);
+		} else {
+			window.open(uri);
+		}
+	}
+	
 //get list with https://www.googleapis.com/youtube/v3/search, it's a json
 //https://www.googleapis.com/youtube/v3/search?key=KEY_UzfxklgqqfRLXI&part=snippet&type=video&q=im+a+buff+baby
 //ex: https://developers.google.com/youtube/v3/guides/implementation/search
 </script>
 </head>
 <body style="margin:0px; padding:0px;">
+	<p>
+		<!--<a href="file:///C:/Users/mkennedy2/Documents/Scripts/Youtube-Downloader/Website/test.mp4" download>Download</a>-->
+		<input button type="submit" onclick="saveAs('file:///C:/Users/mkennedy2/Documents/Scripts/Youtube-Downloader/Website/test.mp4')"></input>
 	<label for="inp" class="inp">
 	  <input type="text" id="inp" placeholder="&nbsp;" onkeypress="handle(event)">
 	  <span class="label">Video URL</span>
