@@ -47,6 +47,10 @@ def send_file():
         #Start sending progress ints
         #exit status 255 = bad
         try:
+            offset = 0
+            started = False
+            if sys.platform == 'linux':
+                offset = 3
             for path in execute(["youtube-dl", url]):
                 if path.find('returned non-zero exit status 255') != -1:
                     raise Exception
@@ -55,11 +59,25 @@ def send_file():
                     break
                 if path.find('%') == -1:
                     continue
-                if path[len('[download] '):path.find('%')] == '100':
+                if path[len('[download]')+offset:path.find('%')].strip() == '0.0' and started:
                     break
+                elif float(path[len('[download]')+offset:path.find('%')].strip()) > 0.0:
+                    started = True
                 
                 print(path, end='')
-                c.send(path[len('[download] '):path.find('%')].encode('utf-8'))
+                c.send(path[len('[download]')+offset:path.find('%')].strip().encode('utf-8'))
+
+                #confirmation that message sent
+                buffer = b''
+                while True:
+                    data = c.recv(1)
+                    if not data or data.decode('utf-8').endswith('\n'):
+                        break
+                    buffer += data
+                status = buffer.decode('utf-8')
+                if status != '200':
+                    return
+
         except Exception as error:
             c.send('255'.encode('utf-8'))
             c.close()
@@ -72,9 +90,17 @@ def send_file():
         f = open(newest, 'rb')
         l = f.read()
         c.send(str(len(l)).encode('utf-8'))
-        print(str(len(l)))
+        print("Len is " + str(len(l)))
         c.send(l)
         print('file sent')
+
+        buffer = b''
+        while True:
+            data = c.recv(1)
+            if not data or data.decode('utf-8').endswith('\n'):
+                break
+            buffer += data
+        status = buffer.decode('utf-8')
 
         c.close()
         f.close()
