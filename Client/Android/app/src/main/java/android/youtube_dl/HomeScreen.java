@@ -30,6 +30,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -159,29 +160,28 @@ public class HomeScreen extends AppCompatActivity implements VideoAdapter.ItemCl
     {
         @Override
         protected String doInBackground(String... params) {
-            String id = params[0];
+            BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
             Socket ControlSocket = null;
             DataOutputStream outToServer = null;
             DataInputStream inFromServer = null;
-            String root = Environment.getExternalStorageDirectory().toString();
-
             try {
                 int port1 = 12345;
                 String ip = "192.168.0.7";
-                //String ip = "localhost";
+               // String ip = "localhost";
                 ControlSocket = new Socket(ip, port1);
                 outToServer = new DataOutputStream(ControlSocket.getOutputStream());
                 inFromServer = new DataInputStream(new BufferedInputStream(ControlSocket.getInputStream()));
 
                 System.out.println("You are connected to the raspberry pi!");
                 System.out.println(ip);
+
+                System.out.print("Enter a URL:\t");
                 // Send the command to the server.
-                outToServer.writeBytes("http://www.youtube.com/watch?v=" + id + '\n');
+                outToServer.writeBytes(params[0] + '\n');
                 // Read status code with readInt(), which blocks until all 3 bytes read.
                 //Need only 3 bytes, as the status is 3 characters long
                 byte[] statusBytes = new byte[3];
                 inFromServer.read(statusBytes);
-                String temp = new String(statusBytes, "UTF-8");
                 int statusCode = Integer.parseInt(new String(statusBytes, "UTF-8"));
 
                 // If status code is 550 (error).
@@ -190,31 +190,74 @@ public class HomeScreen extends AppCompatActivity implements VideoAdapter.ItemCl
                 }
                 else if (statusCode == 200)
                 {
-                    DataInputStream inData = new DataInputStream(
-                            new BufferedInputStream(ControlSocket.getInputStream()));
+                    float percent_done = 0;
+                    String tempPercent = "";
+                    while (!tempPercent.equals("100")) {
+                        byte[] percentBytes = new byte[5];
+                        inFromServer.read(percentBytes);
+                        tempPercent = new String(percentBytes, "UTF-8").trim();
+                        if (tempPercent.contentEquals("255")) {
+                            ControlSocket.close();
+                            return null;
+                        }
+                        outToServer.writeBytes("200" + '\n');
+                        percent_done = Float.parseFloat(tempPercent);
+                        System.out.println(percent_done);
+                    }
+                    //System.out.println(inFromServer.skip(10));
                     byte[] tempSizeBuffer = new byte[10];
                     inFromServer.read(tempSizeBuffer);
                     String tempSize = new String(tempSizeBuffer, "UTF-8").trim();
-                    //TODO: Block until the file downloaded. Wait here until continue message received.
-                    //Get progress?
                     int size = Integer.parseInt(tempSize);
+                    System.out.println("Size is " + Integer.toString(size));
 
-                    byte[] dataIn = new byte[size];
-                    // Reads bytes from the inData stream and places them in dataIn byte array.
-                    inData.readFully(dataIn);
+                    //DataInputStream inData = new DataInputStream(new BufferedInputStream(ControlSocket.getInputStream()));
 
-                    // Use FileOutputStream to write byes to new file.
-                    String filePath = root + "/test.mp4";
-                    try (FileOutputStream fos = new FileOutputStream(filePath)) {
-                        fos.write(dataIn);
+                    //byte[] dataIn = new byte[size];
+
+                    byte[] dataIn = new byte[64];
+                    ArrayList<Byte> tempBytes = new ArrayList<Byte>();
+                    while (inFromServer.available() > 0)
+                    {
+                        inFromServer.read(dataIn);
+                        for (byte tb : dataIn)
+                            tempBytes.add(tb);
                     }
 
+                    System.out.println(tempBytes.size());
+
+                    // Reads bytes from the inData stream and places them in dataIn byte array.
+                    //inFromServer.readFully(dataIn); File structure different on linux vs windows
+                    outToServer.writeBytes("200" + '\n');
+                    // Use FileOutputStream to write byes to new file.
+                    String state = Environment.getExternalStorageState();
+                    if (!Environment.MEDIA_MOUNTED.equals(state)) {
+
+                        //If it isn't mounted - we can't write into it.
+                        return null;
+                    }
+
+                    //String filePath = System.getProperty("user.dir") + "/" + "test.mp4";
+                    File file = new File(getExternalFilesDir(null), "test.mp4");
+                    byte[] result = new byte[tempBytes.size()];
+                    for (int i = 0; i < tempBytes.size(); i++)
+                        result[i] = tempBytes.get(i);
+                    try (FileOutputStream fos = new FileOutputStream(file)) {
+                        fos.write(result);
+                    }
+                    System.out.println("Done");
                 }
                 ControlSocket.close();
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                try{
+                    System.out.println("Available: " + Integer.toString(inFromServer.available()));
+                    e.printStackTrace();
+                } catch (Exception e2) {
+                    e2.printStackTrace();
+                }
+
             }
             return null;
         }
