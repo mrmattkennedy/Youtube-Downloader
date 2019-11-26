@@ -83,13 +83,10 @@ public class HomeScreen extends AppCompatActivity implements VideoAdapter.ItemCl
 
         videoListAction.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (videoListAction.isChecked())
-                {
+                if (videoListAction.isChecked()) {
                     videoListActionText.setText(getResources().getString(R.string.action_on));
                     watchVideo = false;
-                }
-                else
-                {
+                } else {
                     videoListActionText.setText(getResources().getString(R.string.action_off));
                     watchVideo = true;
                 }
@@ -110,8 +107,7 @@ public class HomeScreen extends AppCompatActivity implements VideoAdapter.ItemCl
                         String url = urlText.getText().toString();
                         Matcher matcher = pattern.matcher(url);
 
-                        if (!matcher.matches())
-                        {
+                        if (!matcher.matches()) {
                             videoListActionText.setVisibility(View.VISIBLE);
                             videoListAction.setVisibility(View.VISIBLE);
                             new VideoSearch().execute();
@@ -122,6 +118,7 @@ public class HomeScreen extends AppCompatActivity implements VideoAdapter.ItemCl
                 return false; // pass on to other listeners.
             }
         });
+        //location is storage/emulated/0/Android/data/files
     }
 
     public void setupRecyclerView()
@@ -192,7 +189,8 @@ public class HomeScreen extends AppCompatActivity implements VideoAdapter.ItemCl
                 {
                     float percent_done = 0;
                     String tempPercent = "";
-                    while (!tempPercent.equals("100")) {
+                    short count = 0;
+                    while (count < 2) {
                         byte[] percentBytes = new byte[5];
                         inFromServer.read(percentBytes);
                         tempPercent = new String(percentBytes, "UTF-8").trim();
@@ -202,21 +200,35 @@ public class HomeScreen extends AppCompatActivity implements VideoAdapter.ItemCl
                         }
                         outToServer.writeBytes("200" + '\n');
                         percent_done = Float.parseFloat(tempPercent);
+                        if (tempPercent.equals("100")) {
+                            count++;
+                        }
                         System.out.println(percent_done);
                     }
                     //System.out.println(inFromServer.skip(10));
+
                     byte[] tempSizeBuffer = new byte[10];
                     inFromServer.read(tempSizeBuffer);
-                    String tempSize = new String(tempSizeBuffer, "UTF-8").trim();
+                    String tempSize = new String(tempSizeBuffer, "UTF-8").trim().replaceAll("[^\\d.]", "");;
                     int size = Integer.parseInt(tempSize);
                     System.out.println("Size is " + Integer.toString(size));
 
-                    //DataInputStream inData = new DataInputStream(new BufferedInputStream(ControlSocket.getInputStream()));
+
+                    int time_to_wait = size / 10000000;
+                    try
+                    {
+                        Thread.sleep(time_to_wait * 5000);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                   // DataInputStream inData = new DataInputStream(new BufferedInputStream(ControlSocket.getInputStream()));
 
                     //byte[] dataIn = new byte[size];
 
-                    byte[] dataIn = new byte[64];
+                    byte[] dataIn = new byte[16];
                     ArrayList<Byte> tempBytes = new ArrayList<Byte>();
+                    System.out.println("Reading");
                     while (inFromServer.available() > 0)
                     {
                         inFromServer.read(dataIn);
